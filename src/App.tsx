@@ -1,130 +1,62 @@
-import { useRef, useState } from 'react';
-import HeroSection from './components/HeroSection';
-import ProblemStatement from './components/ProblemStatement';
-import HowItWorks from './components/HowItWorks';
-import UploadZone from './components/UploadZone';
-import AnalysisProgress from './components/AnalysisProgress';
-import ResultsDisplay from './components/ResultsDisplay';
-import SocialProof from './components/SocialProof';
-import WaitlistModal from './components/WaitlistModal';
-import Footer from './components/Footer';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Index from "./pages/Index";
+import QuickScan from "./pages/QuickScan";
+import AccountCheck from "./pages/AccountCheck";
+import ReportFraud from "./pages/ReportFraud";
+import Business from "./pages/Business";
+import BusinessRegister from "./pages/BusinessRegister";
+import BusinessDashboard from "./pages/BusinessDashboard";
+import BusinessDirectory from "./pages/BusinessDirectory";
+import BusinessProfile from "./pages/BusinessProfile";
+import MyBusiness from "./pages/MyBusiness";
+import ActivityHistory from "./pages/ActivityHistory";
+import AdminDashboard from "./pages/AdminDashboard";
+import API from "./pages/API";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import NotFound from "./pages/NotFound";
+import PaymentSelection from "./pages/payment/PaymentSelection";
+import PaymentCallback from "./pages/payment/PaymentCallback";
+import PaymentPending from "./pages/payment/PaymentPending";
 
-interface AnalysisResult {
-  receiptId: string;
-  trustScore: number;
-  verdict: 'authentic' | 'suspicious' | 'fraudulent';
-  extracted: {
-    merchant: string;
-    amount: string;
-    date: string;
-    reference: string;
-    method: string;
-  };
-  issues: string[];
-  recommendation: string;
-  analyzedAt: string;
-}
+const queryClient = new QueryClient();
 
-function App() {
-  const uploadRef = useRef<HTMLDivElement>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
-
-  const scrollToUpload = () => {
-    uploadRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleFileSelect = async (file: File) => {
-    setIsAnalyzing(true);
-    setAnalysisResult(null);
-
-    try {
-      const formData = new FormData();
-      formData.append('receipt', file);
-
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-receipt`;
-      const headers = {
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-      };
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers,
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Analysis failed');
-      }
-
-      const result = await response.json();
-
-      setTimeout(async () => {
-        const { saveReceiptAnalysis } = await import('./lib/api');
-        await saveReceiptAnalysis({
-          receiptId: result.receiptId,
-          trustScore: result.trustScore,
-          verdict: result.verdict,
-          extracted: result.extracted,
-          issues: result.issues,
-          recommendation: result.recommendation,
-        });
-
-        setIsAnalyzing(false);
-        setAnalysisResult(result);
-      }, 8000);
-    } catch (error) {
-      console.error('Analysis error:', error);
-      setIsAnalyzing(false);
-    }
-  };
-
-  const handleCheckAnother = () => {
-    setAnalysisResult(null);
-    scrollToUpload();
-  };
-
-  const handleWaitlistSubmit = async (email: string) => {
-    const { joinWaitlist } = await import('./lib/api');
-    await joinWaitlist(email, 'landing_page');
-  };
-
-  return (
-    <div className="min-h-screen bg-white">
-      <HeroSection
-        onScrollToUpload={scrollToUpload}
-        onOpenWaitlist={() => setIsWaitlistOpen(true)}
-      />
-
-      <ProblemStatement />
-
-      <HowItWorks />
-
-      <div ref={uploadRef}>
-        <UploadZone onFileSelect={handleFileSelect} />
-      </div>
-
-      <AnalysisProgress isAnalyzing={isAnalyzing} />
-
-      {analysisResult && (
-        <ResultsDisplay
-          result={analysisResult}
-          onCheckAnother={handleCheckAnother}
-        />
-      )}
-
-      <SocialProof />
-
-      <Footer />
-
-      <WaitlistModal
-        isOpen={isWaitlistOpen}
-        onClose={() => setIsWaitlistOpen(false)}
-        onSubmit={handleWaitlistSubmit}
-      />
-    </div>
-  );
-}
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/quick-scan" element={<QuickScan />} />
+          <Route path="/scan-history" element={<ActivityHistory />} />
+          <Route path="/activity-history" element={<ActivityHistory />} />
+          <Route path="/account-check" element={<AccountCheck />} />
+          <Route path="/report-fraud" element={<ReportFraud />} />
+          <Route path="/business" element={<Business />} />
+          <Route path="/business/register" element={<BusinessRegister />} />
+          <Route path="/business/directory" element={<BusinessDirectory />} />
+          <Route path="/my-business" element={<MyBusiness />} />
+          <Route path="/business/dashboard/:id" element={<BusinessDashboard />} />
+          <Route path="/business/:id" element={<BusinessProfile />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/api" element={<API />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/payment" element={<PaymentSelection />} />
+          <Route path="/payment/callback" element={<PaymentCallback />} />
+          <Route path="/payment/pending" element={<PaymentPending />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;

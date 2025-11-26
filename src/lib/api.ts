@@ -1,106 +1,85 @@
-import { supabase } from './supabase';
+import { API_BASE_URL } from './constants';
+import type { ApiResponse } from '@/types';
 
-export async function saveReceiptAnalysis(analysis: {
-  receiptId: string;
-  imageUrl?: string;
-  trustScore: number;
-  verdict: 'authentic' | 'suspicious' | 'fraudulent';
-  extracted: {
-    merchant: string;
-    amount: string;
-    date: string;
-    reference: string;
-    method: string;
-  };
-  issues: string[];
-  recommendation: string;
-}) {
-  const { data, error } = await supabase
-    .from('receipt_analyses')
-    .insert({
-      receipt_id: analysis.receiptId,
-      image_url: analysis.imageUrl,
-      trust_score: analysis.trustScore,
-      verdict: analysis.verdict,
-      extracted_merchant: analysis.extracted.merchant,
-      extracted_amount: analysis.extracted.amount,
-      extracted_date: analysis.extracted.date,
-      extracted_reference: analysis.extracted.reference,
-      extracted_method: analysis.extracted.method,
-      issues: analysis.issues,
-      recommendation: analysis.recommendation,
-    })
-    .select()
-    .single();
+class ApiClient {
+  private baseUrl: string;
 
-  if (error) {
-    console.error('Error saving receipt analysis:', error);
-    throw error;
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
   }
 
-  return data;
-}
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
 
-export async function joinWaitlist(email: string, source: string = 'landing_page') {
-  const { data, error } = await supabase
-    .from('waitlist')
-    .insert({
-      email,
-      source,
-    })
-    .select()
-    .maybeSingle();
+      const data = await response.json();
 
-  if (error) {
-    if (error.code === '23505') {
-      throw new Error('Email already registered');
+      if (!response.ok) {
+        return {
+          success: false,
+          error: {
+            code: response.status.toString(),
+            message: data.message || 'An error occurred',
+            details: data,
+          },
+        };
+      }
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'NETWORK_ERROR',
+          message: error instanceof Error ? error.message : 'Network error occurred',
+        },
+      };
     }
-    console.error('Error joining waitlist:', error);
-    throw error;
   }
 
-  return data;
-}
-
-export async function getRecentAnalyses(limit: number = 10) {
-  const { data, error } = await supabase
-    .from('receipt_analyses')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching analyses:', error);
-    throw error;
+  async get<T>(endpoint: string, headers?: HeadersInit): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'GET', headers });
   }
 
-  return data;
-}
-
-export async function getAnalysisById(receiptId: string) {
-  const { data, error } = await supabase
-    .from('receipt_analyses')
-    .select('*')
-    .eq('receipt_id', receiptId)
-    .maybeSingle();
-
-  if (error) {
-    console.error('Error fetching analysis:', error);
-    throw error;
+  async post<T>(
+    endpoint: string,
+    data?: any,
+    headers?: HeadersInit
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers,
+    });
   }
 
-  return data;
-}
-
-export async function getWaitlistCount() {
-  const { count, error } = await supabase
-    .from('waitlist')
-    .select('*', { count: 'exact', head: true });
-
-  if (error) {
-    console.error('Error fetching waitlist count:', error);
-    return 0;
+  async put<T>(
+    endpoint: string,
+    data?: any,
+    headers?: HeadersInit
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+      headers,
+    });
   }
 
-  return count || 0;
+  async delete<T>(endpoint: string, headers?: HeadersInit): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'DELETE', headers });
+  }
 }
+
+export const apiClient = new ApiClient(API_BASE_URL);
