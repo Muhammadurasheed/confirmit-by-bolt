@@ -111,17 +111,16 @@ const Index = () => {
                 transition={{ delay: 0.2 }}
                 className="mb-6 text-4xl font-bold md:text-6xl leading-tight"
               >
-                Verify Receipts and Accounts in Seconds
+                Find Trusted Businesses Near You
               </motion.h1>
-              
+
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
                 className="mb-8 text-lg md:text-xl opacity-90"
               >
-                AI-powered trust verification for African commerce. 
-                Stop fraud before you lose money.
+                Nigeria's Trust Directory. Search for any product or service and discover verified businesses you can trust.
               </motion.p>
 
               {/* Trust Indicators */}
@@ -152,15 +151,15 @@ const Index = () => {
                 className="flex flex-col gap-4 sm:flex-row sm:justify-center"
               >
                 <Button size="lg" variant="secondary" asChild className="shadow-elegant text-lg px-8 py-6">
-                  <Link to="/quick-scan">
-                    <Scan className="mr-2 h-5 w-5" />
-                    Scan Receipt <ArrowRight className="ml-2 h-5 w-5" />
+                  <Link to="/business/directory">
+                    <Building2 className="mr-2 h-5 w-5" />
+                    Browse Directory <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild className="border-white/20 bg-white/10 text-white hover:bg-white/20 text-lg px-8 py-6">
-                  <Link to="/account-check">
-                    <UserCheck className="mr-2 h-5 w-5" />
-                    Check Account
+                  <Link to="/business/register">
+                    <Shield className="mr-2 h-5 w-5" />
+                    Register Your Business
                   </Link>
                 </Button>
               </motion.div>
@@ -195,27 +194,29 @@ const Index = () => {
         <section className="py-20">
           <Container>
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">How Confirmit Protects You</h2>
+              <h2 className="text-3xl font-bold mb-4">Trust Infrastructure for African Commerce</h2>
               <p className="text-xl text-muted-foreground">
-                Three powerful tools to verify trust before you pay
+                Verify businesses before you buy, check accounts before you send money
               </p>
             </div>
             <div className="grid gap-8 md:grid-cols-3">
-              <Card className="shadow-elegant transition-smooth hover:shadow-glow">
+              <Card className="shadow-elegant transition-smooth hover:shadow-glow border-primary/40">
                 <CardHeader>
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                    <Scan className="h-6 w-6 text-primary" />
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/20">
+                    <Building2 className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle>QuickScan</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    Trust Directory
+                    <Badge variant="secondary" className="ml-auto">Primary</Badge>
+                  </CardTitle>
                   <CardDescription>
-                    Upload any receipt for instant AI forensic analysis. 
-                    Detect tampered documents, fake receipts, and fraudulent merchants in under 8 seconds.
+                    Search for any product or service. Find verified businesses near you with trust scores, reviews, and contact details. Visit their website or physical store with confidence.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button variant="ghost" asChild className="group">
-                    <Link to="/quick-scan">
-                      Try QuickScan <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <Button variant="default" asChild className="group w-full">
+                    <Link to="/business/directory">
+                      Browse Directory <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>
                 </CardContent>
@@ -228,8 +229,7 @@ const Index = () => {
                   </div>
                   <CardTitle>Account Check</CardTitle>
                   <CardDescription>
-                    Verify any bank account before sending money. 
-                    Check trust scores, fraud reports, and scam patterns instantly.
+                    Before sending money, verify bank accounts for trust scores and fraud reports. Know if an account is legitimate or flagged by the community.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -244,18 +244,17 @@ const Index = () => {
               <Card className="shadow-elegant transition-smooth hover:shadow-glow">
                 <CardHeader>
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-warning/10">
-                    <Building2 className="h-6 w-6 text-warning" />
+                    <Scan className="h-6 w-6 text-warning" />
                   </div>
-                  <CardTitle>Business Directory</CardTitle>
+                  <CardTitle>Receipt Verification</CardTitle>
                   <CardDescription>
-                    Discover verified businesses with proven track records. 
-                    Register your business to earn customer trust.
+                    Already made a purchase? Upload the receipt for AI-powered authenticity checks. Detect tampered documents and fake transactions.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button variant="ghost" asChild className="group">
-                    <Link to="/business">
-                      Explore Directory <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    <Link to="/quick-scan">
+                      Verify Receipt <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>
                 </CardContent>

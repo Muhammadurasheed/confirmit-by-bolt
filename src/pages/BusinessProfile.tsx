@@ -163,7 +163,7 @@ const BusinessProfile = () => {
                         Tier {business.verification.tier}
                       </Badge>
                     </div>
-                    
+
                     {/* Rating */}
                     <div className="flex items-center gap-2 mt-3">
                       <div className="flex">
@@ -189,6 +189,66 @@ const BusinessProfile = () => {
                 </div>
               </div>
             </div>
+
+            {/* PRIMARY ACTION BUTTONS - Visit Website / Get Directions / Call */}
+            <Card className="mt-6 border-primary/30 shadow-glow bg-gradient-to-br from-primary/5 to-transparent">
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Visit Website Button */}
+                  {business.website && (
+                    <Button
+                      size="lg"
+                      className="w-full text-lg py-6"
+                      asChild
+                    >
+                      <a
+                        href={business.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="mr-2 h-5 w-5" />
+                        Visit Website
+                      </a>
+                    </Button>
+                  )}
+
+                  {/* Get Directions Button */}
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full text-lg py-6"
+                    asChild
+                  >
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.contact.address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MapPin className="mr-2 h-5 w-5" />
+                      Get Directions
+                    </a>
+                  </Button>
+
+                  {/* Call Business Button */}
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full text-lg py-6"
+                    asChild
+                  >
+                    <a href={`tel:${business.contact.phone}`}>
+                      <Phone className="mr-2 h-5 w-5" />
+                      Call Now
+                    </a>
+                  </Button>
+                </div>
+
+                <p className="text-center text-sm text-muted-foreground mt-4 flex items-center justify-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  ConfirmIT Verified Business • Safe to Transact
+                </p>
+              </CardContent>
+            </Card>
           </motion.div>
 
           {/* Main Content Grid */}
