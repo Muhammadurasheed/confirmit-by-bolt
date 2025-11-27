@@ -22,6 +22,8 @@ import NotFound from "./pages/NotFound";
 import PaymentSelection from "./pages/payment/PaymentSelection";
 import PaymentCallback from "./pages/payment/PaymentCallback";
 import PaymentPending from "./pages/payment/PaymentPending";
+import Marketplace from "./pages/Marketplace";
+import MarketplaceSearch from "./pages/MarketplaceSearch";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +46,9 @@ const App = () => (
           <Route path="/my-business" element={<MyBusiness />} />
           <Route path="/business/dashboard/:id" element={<BusinessDashboard />} />
           <Route path="/business/:id" element={<BusinessProfile />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/marketplace/search" element={<MarketplaceSearch />} />
+          <Route path="/marketplace/business/:id" element={<BusinessProfile />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/api" element={<API />} />
           <Route path="/login" element={<Login />} />

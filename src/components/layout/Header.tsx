@@ -20,11 +20,11 @@ const Header = () => {
   };
 
   const navItems = [
+    { name: "Marketplace", path: "/marketplace", highlight: true },
     { name: "QuickScan", path: "/quick-scan" },
-    { name: "Activity History", path: "/activity-history" },
     { name: "Account Check", path: "/account-check" },
+    { name: "Business Directory", path: "/business/directory" },
     { name: "Report Fraud", path: "/report-fraud" },
-    { name: "Business", path: "/business" },
     { name: "API", path: "/api" },
   ];
 
@@ -50,6 +50,8 @@ const Header = () => {
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                 isActive(item.path)
                   ? "bg-primary/10 text-primary"
+                  : item.highlight
+                  ? "text-primary font-semibold hover:bg-primary/10"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >

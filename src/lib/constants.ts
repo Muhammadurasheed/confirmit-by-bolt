@@ -26,11 +26,41 @@ export const HEDERA_CONFIG = {
   explorerUrl: 'https://hashscan.io/testnet',
 };
 
-// Business Tiers
+// Business Verification Pricing (NEW SIMPLIFIED MODEL)
+export const MARKETPLACE_PRICING = {
+  VERIFICATION_FEE: 12000, // ₦12,000 one-time (KYC + NFT minting)
+  ANNUAL_LISTING: 12000, // ₦12,000/year for marketplace visibility
+  MONTHLY_EQUIVALENT: 1000, // ₦1,000/month (shown for clarity)
+} as const;
+
+// Legacy Business Tiers (kept for existing verified businesses)
 export const BUSINESS_TIERS = {
-  1: { name: 'Basic', price: 0, features: ['Basic verification', 'Profile listing'] },
-  2: { name: 'Verified', price: 25000, features: ['Full verification', 'Trust badge', 'Priority listing'] },
-  3: { name: 'Premium', price: 75000, features: ['Premium verification', 'API access', 'Analytics', 'White-label'] },
+  1: {
+    name: 'Verified Business',
+    price: 12000,
+    features: [
+      'Full KYC verification (CAC, Bank, ID)',
+      'Trust ID NFT on Hedera blockchain',
+      'Listed in marketplace search',
+      'Enhanced profile with photos',
+      'Products/services showcase',
+      'Business hours display',
+      'Analytics dashboard',
+      'Valid for 12 months',
+    ]
+  },
+  2: {
+    name: 'Verified',
+    price: 25000,
+    features: ['Full verification', 'Trust badge', 'Priority listing'],
+    deprecated: true, // Mark old tiers as deprecated
+  },
+  3: {
+    name: 'Premium',
+    price: 75000,
+    features: ['Premium verification', 'API access', 'Analytics', 'White-label'],
+    deprecated: true,
+  },
 } as const;
 
 // Trust Score Thresholds

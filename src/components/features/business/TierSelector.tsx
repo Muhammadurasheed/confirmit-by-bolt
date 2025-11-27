@@ -36,17 +36,17 @@ const TierSelector = ({ onSelectTier }: TierSelectorProps) => {
         animate={{ opacity: 1, y: 0 }}
         className="text-center space-y-4"
       >
-        <h1 className="text-4xl md:text-5xl font-bold">Get Verified. Build Trust.</h1>
+        <h1 className="text-4xl md:text-5xl font-bold">Get Verified & Listed on Marketplace</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Join 3,400+ verified businesses protecting their reputation on Legit
+          Join 500+ verified businesses on ConfirmIT. Get discovered by customers searching for your products.
         </p>
-        
+
         <div className="flex flex-wrap justify-center gap-6 pt-4">
           {[
-            "Verified badge for your profile",
-            "Higher trust scores",
-            "Dispute protection",
-            "API access for auto-verification",
+            "Full KYC verification + Trust ID NFT",
+            "Listed in marketplace search results",
+            "Enhanced profile with photos & analytics",
+            "Valid for 12 months",
           ].map((benefit, index) => (
             <motion.div
               key={benefit}
@@ -62,12 +62,12 @@ const TierSelector = ({ onSelectTier }: TierSelectorProps) => {
         </div>
       </motion.div>
 
-      {/* Tier Cards */}
-      <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {Object.entries(BUSINESS_TIERS).map(([tier, info], index) => {
+      {/* Simplified Single Tier Card */}
+      <div className="max-w-xl mx-auto">
+        {Object.entries(BUSINESS_TIERS).filter(([tier]) => tier === '1').map(([tier, info], index) => {
           const TierIcon = tierIcons[parseInt(tier) as 1 | 2 | 3];
           const tierNum = parseInt(tier) as 1 | 2 | 3;
-          const isPopular = tierNum === 3;
+          const isPopular = true;
 
           return (
             <motion.div
@@ -77,13 +77,11 @@ const TierSelector = ({ onSelectTier }: TierSelectorProps) => {
               transition={{ delay: index * 0.1 }}
               className="relative"
             >
-              {isPopular && (
-                <div className="absolute -top-4 left-0 right-0 flex justify-center z-10">
-                  <Badge className="bg-gradient-primary text-white px-4 py-1 shadow-elegant">
-                    {tierBadges[tierNum]}
-                  </Badge>
-                </div>
-              )}
+              <div className="absolute -top-4 left-0 right-0 flex justify-center z-10">
+                <Badge className="bg-gradient-primary text-white px-4 py-1 shadow-elegant">
+                  Recommended - Simple Pricing
+                </Badge>
+              </div>
               
               <Card
                 className={`relative overflow-hidden transition-all hover:shadow-elegant ${
@@ -99,17 +97,11 @@ const TierSelector = ({ onSelectTier }: TierSelectorProps) => {
                   
                   <div>
                     <CardTitle className="text-2xl mb-2">
-                      TIER {tier}: {info.name}
+                      {info.name}
                     </CardTitle>
-                    <div className="text-3xl font-bold">
-                      {info.price === 0 ? (
-                        <span className="text-success">FREE</span>
-                      ) : (
-                        <>
-                          <span>₦{info.price.toLocaleString()}</span>
-                          <span className="text-sm text-muted-foreground">/year</span>
-                        </>
-                      )}
+                    <div className="text-4xl font-bold">
+                      <span>₦{info.price.toLocaleString()}</span>
+                      <span className="text-sm text-muted-foreground block mt-1">/year (just ₦1,000/month)</span>
                     </div>
                   </div>
                 </CardHeader>
@@ -126,11 +118,11 @@ const TierSelector = ({ onSelectTier }: TierSelectorProps) => {
 
                   <Button
                     onClick={() => onSelectTier(tierNum)}
-                    variant={isPopular ? "default" : "outline"}
+                    variant="default"
                     className="w-full"
                     size="lg"
                   >
-                    {tierNum === 1 ? "Get Started" : "Start Verification"}
+                    Get Verified & Start Listing
                   </Button>
                 </CardContent>
               </Card>
@@ -139,12 +131,15 @@ const TierSelector = ({ onSelectTier }: TierSelectorProps) => {
         })}
       </div>
 
-      {/* Comparison Link */}
-      <div className="text-center">
-        <Button variant="ghost" className="text-primary">
-          Compare All Tiers →
-        </Button>
-      </div>
+      {/* Info Card */}
+      <Card className="max-w-2xl mx-auto bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+        <CardContent className="pt-6 text-center">
+          <p className="text-muted-foreground">
+            <strong>What happens after payment?</strong><br />
+            Our admin team reviews your documents within 24-48 hours. Once approved, you'll receive your Trust ID NFT and your business will be listed in our marketplace where customers can find you.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 };
