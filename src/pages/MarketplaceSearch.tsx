@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, MapPin, SlidersHorizontal, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { searchMarketplace } from "@/services/marketplace";
 import type { MarketplaceSearchResult } from "@/types/marketplace";
 
 const MarketplaceSearch = () => {
@@ -51,77 +52,20 @@ const MarketplaceSearch = () => {
     setLoading(true);
 
     try {
-      // TODO: Call actual API endpoint
-      // const response = await fetch(`/api/marketplace/search?q=${query}&lat=${userLocation?.lat}&lng=${userLocation?.lng}`);
+      const response = await searchMarketplace({
+        query,
+        lat: userLocation?.lat,
+        lng: userLocation?.lng,
+        radius: 10, // 10km radius
+        page: 1,
+        limit: 20, // Show more results
+      });
 
-      // MOCK DATA for now (until backend is ready)
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
-
-      const mockResults: MarketplaceSearchResult[] = [
-        {
-          businessId: "biz_001",
-          name: "TechHub Electronics",
-          tagline: "Apple Products Specialist - Authorized Reseller",
-          trustScore: 94,
-          products: ["iPhone", "MacBook", "iPad", "AirPods"],
-          services: ["Repair", "Trade-in"],
-          distance: 2.3,
-          rating: 4.8,
-          reviewCount: 127,
-          thumbnail: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=400&h=300&fit=crop",
-          location: {
-            area: "Ikeja",
-            city: "Lagos",
-          },
-          isOpen: true,
-          verified: true,
-          tier: 3,
-        },
-        {
-          businessId: "biz_002",
-          name: "Lagos Gadgets Store",
-          tagline: "Your One-Stop Shop for Electronics",
-          trustScore: 87,
-          products: ["Laptops", "Phones", "Tablets", "Accessories"],
-          services: ["Installation", "Warranty"],
-          distance: 4.1,
-          rating: 4.5,
-          reviewCount: 89,
-          thumbnail: "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&h=300&fit=crop",
-          location: {
-            area: "Victoria Island",
-            city: "Lagos",
-          },
-          isOpen: false,
-          verified: true,
-          tier: 2,
-        },
-        {
-          businessId: "biz_003",
-          name: "Premium Tech Solutions",
-          tagline: "Enterprise IT Equipment & Support",
-          trustScore: 91,
-          products: ["Laptops", "Servers", "Networking"],
-          services: ["IT Support", "Maintenance"],
-          distance: 6.7,
-          rating: 4.7,
-          reviewCount: 54,
-          thumbnail: "https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=400&h=300&fit=crop",
-          location: {
-            area: "Lekki",
-            city: "Lagos",
-          },
-          isOpen: true,
-          verified: true,
-          tier: 3,
-        },
-      ];
-
-      setBusinesses(mockResults);
-      setTotalResults(mockResults.length);
+      setBusinesses(response.results);
+      setTotalResults(response.total);
     } catch (error) {
       toast.error("Search failed", {
-        description: "Unable to fetch results. Please try again.",
+        description: error instanceof Error ? error.message : "Unable to fetch results. Please try again.",
       });
       console.error("Search error:", error);
     } finally {
