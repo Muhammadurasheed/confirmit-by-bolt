@@ -177,6 +177,94 @@ export interface Business {
   stats: BusinessStats;
   apiKeys?: ApiKey[];
   hedera?: HederaInfo;
+  marketplace?: MarketplaceInfo;
+}
+
+// Marketplace Types
+export interface MarketplaceInfo {
+  status: 'active' | 'expired' | 'inactive';
+  registeredAt?: string;
+  expiryDate?: string;
+  profile: MarketplaceProfile;
+  analytics: MarketplaceAnalytics;
+}
+
+export interface MarketplaceProfile {
+  tagline?: string;
+  description?: string;
+  products?: string[];
+  services?: string[];
+  photos?: {
+    primary: string;
+    gallery: string[];
+  };
+  hours?: {
+    monday?: BusinessHours | null;
+    tuesday?: BusinessHours | null;
+    wednesday?: BusinessHours | null;
+    thursday?: BusinessHours | null;
+    friday?: BusinessHours | null;
+    saturday?: BusinessHours | null;
+    sunday?: BusinessHours | null;
+  };
+  contact?: {
+    phone: string;
+    email: string;
+    website: string;
+    whatsapp?: string;
+    instagram?: string;
+  };
+  location?: {
+    address: string;
+    area: string;
+    city: string;
+    state: string;
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
+}
+
+export interface BusinessHours {
+  open: string;
+  close: string;
+}
+
+export interface MarketplaceAnalytics {
+  views: number;
+  websiteClicks: number;
+  directionRequests: number;
+  phoneClicks?: number;
+  whatsappClicks?: number;
+  reviewsCount: number;
+  lastViewedAt?: string;
+}
+
+export interface MarketplaceSearchResult {
+  businessId: string;
+  name: string;
+  tagline: string;
+  trustScore: number;
+  products: string[];
+  services: string[];
+  distance: number | null;
+  rating: number;
+  reviewCount: number;
+  thumbnail: string;
+  location: {
+    area: string;
+    city: string;
+  };
+}
+
+export interface MarketplaceSearchFilters {
+  q?: string;
+  lat?: number;
+  lng?: number;
+  radius?: number;
+  page?: number;
+  limit?: number;
 }
 
 export interface ContactInfo {

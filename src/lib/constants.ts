@@ -26,40 +26,43 @@ export const HEDERA_CONFIG = {
   explorerUrl: 'https://hashscan.io/testnet',
 };
 
-// Business Verification Pricing (NEW SIMPLIFIED MODEL)
-export const MARKETPLACE_PRICING = {
-  VERIFICATION_FEE: 12000, // ₦12,000 one-time (KYC + NFT minting)
-  ANNUAL_LISTING: 12000, // ₦12,000/year for marketplace visibility
-  MONTHLY_EQUIVALENT: 1000, // ₦1,000/month (shown for clarity)
+// Business Registration & Subscription Model
+export const BUSINESS_REGISTRATION = {
+  oneTimeVerification: 10000, // ₦10K one-time registration
+  monthlySubscription: 1000, // ₦1K/month marketplace listing
+  freeTrialDays: 30, // 1 month free trial after registration
 } as const;
 
-// Legacy Business Tiers (kept for existing verified businesses)
-export const BUSINESS_TIERS = {
-  1: {
-    name: 'Verified Business',
-    price: 12000,
+// Marketplace Subscription Plans
+export const MARKETPLACE_PLANS = {
+  monthly: {
+    name: 'Monthly Subscription',
+    price: 1000,
+    duration: '1 month',
     features: [
-      'Full KYC verification (CAC, Bank, ID)',
-      'Trust ID NFT on Hedera blockchain',
-      'Listed in marketplace search',
-      'Enhanced profile with photos',
-      'Products/services showcase',
-      'Business hours display',
+      'Marketplace search visibility',
+      'Enhanced business profile',
+      'Photo gallery (up to 10 images)',
       'Analytics dashboard',
-      'Valid for 12 months',
-    ]
+      'Customer reviews',
+      'Multiple contact methods',
+      'Priority in search results',
+    ],
   },
-  2: {
-    name: 'Verified',
-    price: 25000,
-    features: ['Full verification', 'Trust badge', 'Priority listing'],
-    deprecated: true, // Mark old tiers as deprecated
-  },
-  3: {
-    name: 'Premium',
-    price: 75000,
-    features: ['Premium verification', 'API access', 'Analytics', 'White-label'],
-    deprecated: true,
+} as const;
+
+// Legacy tiers (keep for backward compatibility)
+export const BUSINESS_TIERS = {
+  1: { 
+    name: 'Verification', 
+    price: 10000, 
+    features: [
+      'Full KYC verification',
+      'Trust ID NFT on blockchain',
+      'Basic business profile',
+      'Verified badge',
+      '30-day marketplace trial',
+    ] 
   },
 } as const;
 

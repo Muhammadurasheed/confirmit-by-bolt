@@ -19,7 +19,6 @@ class VisionAgent:
             raise ValueError("GEMINI_API_KEY is required")
         
         genai.configure(api_key=api_key)
-        # Use the CORRECT model name that actually exists (from test script)
         self.model_name = 'models/gemini-2.5-flash'  # Fast, accurate, available
         self.model = genai.GenerativeModel(self.model_name)
 

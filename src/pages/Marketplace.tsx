@@ -1,284 +1,338 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Shield, Search, Store, CheckCircle2, Lock, TrendingUp, MapPin, Award, ArrowRight, Sparkles } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Container from "@/components/layout/Container";
-import { Input } from "@/components/ui/input";
+import MarketplaceSearchBar from "@/components/features/marketplace/MarketplaceSearchBar";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Search,
-  MapPin,
-  TrendingUp,
-  Shield,
-  Star,
-  Building2,
-  Smartphone,
-  ShoppingBag,
-  Car,
-  Home,
-  Briefcase,
-} from "lucide-react";
 
 const Marketplace = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-  const [userLocation, setUserLocation] = useState<string>("Lagos, Nigeria");
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    detectUserLocation();
-  }, []);
+  const handleSearch = (query: string, location?: { lat: number; lng: number }) => {
+    setLoading(true);
+    const params = new URLSearchParams({ q: query });
+    if (location) {
+      params.append('lat', location.lat.toString());
+      params.append('lng', location.lng.toString());
+    }
+    navigate(`/marketplace/search?${params.toString()}`);
+  };
 
-  const detectUserLocation = () => {
-    if ("geolocation" in navigator) {
-      setIsLoadingLocation(true);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // In production, reverse geocode to get city name
-          setUserLocation(`Near you (${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)})`);
-          setIsLoadingLocation(false);
-        },
-        (error) => {
-          console.log("Geolocation denied, using default");
-          setIsLoadingLocation(false);
-        }
-      );
+  const fadeInUp = {
+    initial: { opacity: 0, y: 40 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.6 }
+  };
+
+  const staggerChildren = {
+    animate: {
+      transition: {
+        staggerChildren: 0.1
+      }
     }
   };
-
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigate(`/marketplace/search?q=${encodeURIComponent(searchQuery)}`);
-    }
-  };
-
-  const handleCategorySearch = (category: string) => {
-    navigate(`/marketplace/search?q=${encodeURIComponent(category)}`);
-  };
-
-  const popularSearches = [
-    "iPhone",
-    "Laptop",
-    "Wedding Photographer",
-    "Caterer",
-    "Fashion Designer",
-    "Car Dealer",
-    "Furniture",
-    "Electronics",
-  ];
-
-  const categories = [
-    { name: "Electronics", icon: Smartphone, query: "Electronics" },
-    { name: "Fashion", icon: ShoppingBag, query: "Fashion" },
-    { name: "Vehicles", icon: Car, query: "Vehicles" },
-    { name: "Real Estate", icon: Home, query: "Real Estate" },
-    { name: "Services", icon: Briefcase, query: "Services" },
-  ];
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
-
+      
       <main className="flex-1">
-        {/* Hero Section with Search */}
-        <section className="gradient-primary py-20 text-primary-foreground relative overflow-hidden">
-          <Container className="relative z-10">
+        {/* Hero Section - Apple-inspired */}
+        <section className="relative overflow-hidden">
+          {/* Gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+          
+          {/* Animated background elements */}
+          <div className="absolute inset-0 overflow-hidden">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-3xl mx-auto text-center"
+              className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl"
+              animate={{
+                x: [0, 50, 0],
+                y: [0, 30, 0],
+              }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            <motion.div
+              className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/10 rounded-full blur-3xl"
+              animate={{
+                x: [0, -30, 0],
+                y: [0, 50, 0],
+              }}
+              transition={{
+                duration: 15,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          </div>
+
+          <Container className="relative py-20 md:py-32">
+            <motion.div
+              className="max-w-5xl mx-auto"
+              {...fadeInUp}
             >
-              <h1 className="text-4xl md:text-6xl font-bold mb-6">
-                Find Trusted Businesses Near You
+              {/* Badge */}
+              <motion.div 
+                className="flex justify-center mb-8"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold text-primary">Nigeria's First Blockchain-Verified Business Directory</span>
+                </div>
+              </motion.div>
+              
+              {/* Main headline */}
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-center mb-8 leading-tight">
+                Discover{" "}
+                <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
+                  Trusted
+                </span>
+                {" "}Businesses
               </h1>
-              <p className="text-lg md:text-xl opacity-90 mb-8">
-                Search for products and services. Discover verified businesses with proven trust scores.
+              
+              {/* Subheadline */}
+              <p className="text-xl md:text-2xl text-center text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
+                Every business is KYC-verified and secured with blockchain technology. 
+                Search, verify, and transact with confidence.
               </p>
 
-              {/* Search Box */}
-              <div className="bg-white rounded-lg shadow-glow p-2 flex flex-col md:flex-row gap-2">
-                <div className="flex-1 flex items-center gap-2 px-3">
-                  <Search className="h-5 w-5 text-muted-foreground" />
-                  <Input
-                    placeholder="What are you looking for? (e.g., iPhone, Laptop, Photographer)"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    className="border-0 shadow-none focus-visible:ring-0 text-lg"
-                  />
-                </div>
-                <div className="flex items-center gap-2 px-3 py-2 border-t md:border-t-0 md:border-l border-gray-200">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {isLoadingLocation ? "Detecting..." : userLocation}
-                  </span>
-                </div>
-                <Button
-                  size="lg"
-                  onClick={handleSearch}
-                  className="md:w-auto w-full"
-                  disabled={!searchQuery.trim()}
-                >
-                  <Search className="h-5 w-5 mr-2" />
-                  Search
-                </Button>
-              </div>
+              {/* Search Bar - Enhanced */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="max-w-3xl mx-auto"
+              >
+                <MarketplaceSearchBar onSearch={handleSearch} loading={loading} />
+              </motion.div>
 
-              {/* Popular Searches */}
-              <div className="mt-6">
-                <p className="text-sm opacity-75 mb-3">Popular searches:</p>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {popularSearches.map((term) => (
-                    <Badge
-                      key={term}
-                      variant="secondary"
-                      className="cursor-pointer hover:bg-white/30 transition-colors"
-                      onClick={() => {
-                        setSearchQuery(term);
-                        handleCategorySearch(term);
-                      }}
-                    >
-                      {term}
-                    </Badge>
-                  ))}
+              {/* Trust indicators */}
+              <motion.div
+                className="flex flex-wrap items-center justify-center gap-8 mt-16"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
+                  <span className="text-sm font-medium">KYC Verified</span>
                 </div>
-              </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Lock className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-medium">Blockchain Secured</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Award className="h-5 w-5 text-warning" />
+                  <span className="text-sm font-medium">Trust Scored</span>
+                </div>
+              </motion.div>
             </motion.div>
           </Container>
         </section>
 
-        {/* Stats Section */}
-        <section className="py-12 bg-muted/30">
+        {/* How It Works - Google Material Design inspired */}
+        <section className="py-24 md:py-32 bg-muted/30">
           <Container>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="flex justify-center mb-2">
-                  <Shield className="h-8 w-8 text-success" />
-                </div>
-                <p className="text-3xl font-bold">500+</p>
-                <p className="text-sm text-muted-foreground">Verified Businesses</p>
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center mb-2">
-                  <Star className="h-8 w-8 text-warning" />
-                </div>
-                <p className="text-3xl font-bold">4.8/5</p>
-                <p className="text-sm text-muted-foreground">Average Rating</p>
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center mb-2">
-                  <TrendingUp className="h-8 w-8 text-primary" />
-                </div>
-                <p className="text-3xl font-bold">10K+</p>
-                <p className="text-sm text-muted-foreground">Searches This Month</p>
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center mb-2">
-                  <Building2 className="h-8 w-8 text-purple-500" />
-                </div>
-                <p className="text-3xl font-bold">100%</p>
-                <p className="text-sm text-muted-foreground">KYC Verified</p>
-              </div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Three Steps to Trust
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Finding verified businesses has never been this simple
+              </p>
+            </motion.div>
+            
+            <motion.div 
+              className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto"
+              variants={staggerChildren}
+              initial="initial"
+              whileInView="animate"
+              viewport={{ once: true }}
+            >
+              {[
+                {
+                  icon: Search,
+                  title: "Search",
+                  description: "Type what you need - iPhone, laptop, plumber, restaurant. We'll show you verified businesses near you.",
+                  color: "from-blue-500 to-cyan-500"
+                },
+                {
+                  icon: Shield,
+                  title: "Verify",
+                  description: "Check Trust Scores, blockchain verification, customer reviews, and complete business credentials.",
+                  color: "from-purple-500 to-pink-500"
+                },
+                {
+                  icon: Store,
+                  title: "Visit",
+                  description: "Click 'Visit Website' to go directly to their store. Buy with confidence knowing they're verified.",
+                  color: "from-orange-500 to-red-500"
+                }
+              ].map((step, index) => (
+                <motion.div
+                  key={step.title}
+                  variants={fadeInUp}
+                  className="relative group"
+                >
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative bg-card rounded-2xl p-8 h-full border shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center mb-6 shadow-lg`}>
+                      <step.icon className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="text-5xl font-bold text-muted-foreground/20">{index + 1}</span>
+                      <h3 className="text-2xl font-bold">{step.title}</h3>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
           </Container>
         </section>
 
-        {/* Categories Section */}
-        <section className="py-16">
+        {/* Trust Features - Card Grid */}
+        <section className="py-24 md:py-32">
           <Container>
-            <h2 className="text-3xl font-bold text-center mb-12">Browse by Category</h2>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-              {categories.map((category) => (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Built on Trust
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Every layer of verification you need to transact with confidence
+              </p>
+            </motion.div>
+            
+            <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+              {[
+                {
+                  icon: Shield,
+                  title: "Full KYC Verification",
+                  description: "CAC certificate, bank account verification, owner ID, and physical address. Every detail checked.",
+                  gradient: "from-emerald-500/10 to-teal-500/10"
+                },
+                {
+                  icon: Lock,
+                  title: "Blockchain Security",
+                  description: "Trust IDs minted as NFTs on Hedera. Immutable, permanent, unforgeable verification records.",
+                  gradient: "from-blue-500/10 to-indigo-500/10"
+                },
+                {
+                  icon: TrendingUp,
+                  title: "Real Customer Reviews",
+                  description: "Authentic feedback from verified customers. See ratings, read experiences, make informed decisions.",
+                  gradient: "from-violet-500/10 to-purple-500/10"
+                },
+                {
+                  icon: MapPin,
+                  title: "Location-Based Discovery",
+                  description: "Find businesses near you, sorted by distance and trust score. Local, verified, trustworthy.",
+                  gradient: "from-orange-500/10 to-red-500/10"
+                }
+              ].map((feature, index) => (
                 <motion.div
-                  key={category.name}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group"
                 >
-                  <Card
-                    className="cursor-pointer hover:shadow-elegant transition-shadow"
-                    onClick={() => handleCategorySearch(category.query)}
-                  >
-                    <CardContent className="pt-6 text-center">
-                      <div className="flex justify-center mb-4">
-                        <div className="rounded-full bg-primary/10 p-4">
-                          <category.icon className="h-8 w-8 text-primary" />
-                        </div>
+                  <div className={`p-8 rounded-2xl border bg-gradient-to-br ${feature.gradient} hover:border-primary/50 transition-all duration-300 h-full`}>
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 rounded-xl bg-background/50 backdrop-blur-sm border shadow-sm">
+                        <feature.icon className="h-6 w-6 text-primary" />
                       </div>
-                      <p className="font-semibold">{category.name}</p>
-                    </CardContent>
-                  </Card>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">
+                          {feature.title}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {feature.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               ))}
             </div>
           </Container>
         </section>
 
-        {/* How It Works */}
-        <section className="py-16 bg-muted/30">
-          <Container>
-            <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="rounded-full bg-primary text-primary-foreground w-12 h-12 flex items-center justify-center font-bold text-xl">
-                    1
-                  </div>
-                </div>
-                <h3 className="font-bold text-xl mb-2">Search</h3>
-                <p className="text-muted-foreground">
-                  Enter what you're looking for and your location
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="rounded-full bg-success text-success-foreground w-12 h-12 flex items-center justify-center font-bold text-xl">
-                    2
-                  </div>
-                </div>
-                <h3 className="font-bold text-xl mb-2">Discover</h3>
-                <p className="text-muted-foreground">
-                  Browse verified businesses ranked by trust score and proximity
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="rounded-full bg-warning text-warning-foreground w-12 h-12 flex items-center justify-center font-bold text-xl">
-                    3
-                  </div>
-                </div>
-                <h3 className="font-bold text-xl mb-2">Visit</h3>
-                <p className="text-muted-foreground">
-                  Click to visit their website or get directions to their store
-                </p>
-              </div>
-            </div>
-          </Container>
-        </section>
+        {/* CTA Section - Vibrant */}
+        <section className="relative py-24 md:py-32 overflow-hidden">
+          {/* Animated gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent to-primary opacity-90" />
+          <motion.div
+            className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent)]"
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
 
-        {/* CTA Section */}
-        <section className="py-16">
-          <Container>
-            <Card className="bg-gradient-primary text-primary-foreground border-0">
-              <CardContent className="py-12 text-center">
-                <h2 className="text-3xl font-bold mb-4">
-                  Own a Business? Get Listed Today
-                </h2>
-                <p className="text-lg opacity-90 mb-6 max-w-2xl mx-auto">
-                  Join 500+ verified businesses on ConfirmIT Marketplace. Get discovered by customers searching for your products and services.
-                </p>
+          <Container className="relative">
+            <motion.div
+              className="max-w-4xl mx-auto text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-6">
+                Start Your Search Now
+              </h2>
+              <p className="text-xl md:text-2xl text-primary-foreground/90 mb-12">
+                Join thousands discovering trusted businesses every day
+              </p>
+              
+              <div className="bg-background/10 backdrop-blur-xl border border-primary-foreground/20 rounded-3xl p-6 mb-8">
+                <MarketplaceSearchBar 
+                  onSearch={handleSearch} 
+                  loading={loading}
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-4">
                 <Button
                   size="lg"
                   variant="secondary"
-                  onClick={() => navigate("/business/register")}
+                  onClick={() => navigate('/business/register')}
+                  className="text-lg px-8 py-6 rounded-xl shadow-xl hover:shadow-2xl transition-all"
                 >
                   Register Your Business
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </motion.div>
           </Container>
         </section>
       </main>

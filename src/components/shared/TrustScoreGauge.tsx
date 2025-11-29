@@ -21,12 +21,14 @@ const TrustScoreGauge = ({ score, size = "md", showLabel = true }: TrustScoreGau
   };
 
   const getScoreColor = (score: number) => {
+    if (score === 0) return "text-muted-foreground";
     if (score >= 80) return "text-success";
     if (score >= 50) return "text-warning";
     return "text-danger";
   };
 
   const getStrokeColor = (score: number) => {
+    if (score === 0) return "hsl(var(--muted))";
     if (score >= 80) return "hsl(var(--success))";
     if (score >= 50) return "hsl(var(--warning))";
     return "hsl(var(--danger))";
@@ -70,7 +72,7 @@ const TrustScoreGauge = ({ score, size = "md", showLabel = true }: TrustScoreGau
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
           >
-            {score}
+            {score === 0 ? "N/A" : score}
           </motion.span>
         </div>
       </div>

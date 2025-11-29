@@ -24,6 +24,7 @@ import PaymentCallback from "./pages/payment/PaymentCallback";
 import PaymentPending from "./pages/payment/PaymentPending";
 import Marketplace from "./pages/Marketplace";
 import MarketplaceSearch from "./pages/MarketplaceSearch";
+import MarketplaceBusinessProfile from "./pages/MarketplaceBusinessProfile";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,9 @@ const App = () => (
           <Route path="/scan-history" element={<ActivityHistory />} />
           <Route path="/activity-history" element={<ActivityHistory />} />
           <Route path="/account-check" element={<AccountCheck />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/marketplace/search" element={<MarketplaceSearch />} />
+          <Route path="/marketplace/business/:id" element={<MarketplaceBusinessProfile />} />
           <Route path="/report-fraud" element={<ReportFraud />} />
           <Route path="/business" element={<Business />} />
           <Route path="/business/register" element={<BusinessRegister />} />
@@ -46,9 +50,6 @@ const App = () => (
           <Route path="/my-business" element={<MyBusiness />} />
           <Route path="/business/dashboard/:id" element={<BusinessDashboard />} />
           <Route path="/business/:id" element={<BusinessProfile />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/marketplace/search" element={<MarketplaceSearch />} />
-          <Route path="/marketplace/business/:id" element={<BusinessProfile />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/api" element={<API />} />
           <Route path="/login" element={<Login />} />

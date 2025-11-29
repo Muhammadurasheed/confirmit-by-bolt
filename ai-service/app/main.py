@@ -6,10 +6,10 @@ import uvicorn
 import os
 
 from app.config import settings
-from app.core import firebase  # ✅ Initialize Firebase early
+from app.core import firebase  
 
 # Import routers
-from app.routers import receipts, accounts, marketplace
+from app.routers import receipts, accounts
 
 # ============================================================
 # 🔧 Structured Logging Setup
@@ -54,7 +54,6 @@ app.add_middleware(
 # ============================================================
 app.include_router(receipts.router, prefix="/api", tags=["receipts"])
 app.include_router(accounts.router, prefix="/api", tags=["accounts"])
-app.include_router(marketplace.router, prefix="/api", tags=["marketplace"])
 
 # ============================================================
 # 🩺 Health & Root Routes

@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import DocumentUpload from "./DocumentUpload";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Globe, Linkedin } from "lucide-react";
-import { BUSINESS_TIERS } from "@/lib/constants";
+import { BUSINESS_TIERS, BUSINESS_REGISTRATION } from "@/lib/constants";
 import { LogoUpload } from "./LogoUpload";
 import { PhoneInput } from "@/components/shared/PhoneInput";
 
@@ -502,7 +502,7 @@ const RegistrationForm = ({ form, currentStep, onSubmit }: RegistrationFormProps
                                 <div>
                                   <CardTitle className="text-lg">{info.name}</CardTitle>
                                   <CardDescription className="text-2xl font-bold mt-2">
-                                    {info.price === 0 ? "Free" : `₦${info.price.toLocaleString()}/yr`}
+                                    {info.price === BUSINESS_REGISTRATION.oneTimeVerification ? `₦${info.price.toLocaleString()}` : "Free"}
                                   </CardDescription>
                                 </div>
                                 <RadioGroupItem value={tier} id={`tier-${tier}`} />

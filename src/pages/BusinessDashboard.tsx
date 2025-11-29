@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import Header from "@/components/layout/Header";
@@ -7,60 +7,66 @@ import Footer from "@/components/layout/Footer";
 import Container from "@/components/layout/Container";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import TrustScoreGauge from "@/components/shared/TrustScoreGauge";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import TrustIdNftCard from "@/components/shared/TrustIdNftCard";
 import { ApiKeysManagement } from "@/components/features/business/ApiKeysManagement";
 import { UsageAnalytics } from "@/components/features/business/UsageAnalytics";
 import { WebhookManagement } from "@/components/features/business/WebhookManagement";
-import { getBusiness, getBusinessStats, generateApiKey } from "@/services/business";
+import MarketplaceStatusCard from "@/components/features/business/MarketplaceStatusCard";
+import MarketplaceAnalyticsCard from "@/components/features/business/MarketplaceAnalyticsCard";
+import MarketplaceProfileEditor from "@/components/features/business/MarketplaceProfileEditor";
+import MarketplaceProfilePreview from "@/components/features/business/MarketplaceProfilePreview";
+import BusinessSettingsForm from "@/components/features/business/BusinessSettingsForm";
+import { getBusiness, getBusinessStats } from "@/services/business";
 import { Business, BusinessStats } from "@/types";
 import {
   Eye,
   Shield,
   TrendingUp,
-  Key,
-  Copy,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  BarChart3,
   Users,
   Share2,
   Code,
   ExternalLink,
   QrCode,
   Star,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  BarChart3,
+  Store,
+  Settings,
+  Key,
+  Webhook,
+  Building2,
+  ArrowUpRight,
 } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const BusinessDashboard = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [business, setBusiness] = useState<Business | null>(null);
   const [stats, setStats] = useState<BusinessStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [generatingKey, setGeneratingKey] = useState(false);
-  const [newApiKey, setNewApiKey] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<string>("overview");
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
 
       try {
-        // Fetch business data first
         const businessData = await getBusiness(id);
         setBusiness(businessData.data);
 
-        // Only fetch stats if business is approved
         if (businessData.data.verification?.status === 'approved') {
           try {
             const statsData = await getBusinessStats(id);
             setStats(statsData.stats);
           } catch (statsError) {
-            // Stats might not be available yet, use defaults
             console.warn('Stats not available:', statsError);
             setStats({
               profileViews: 0,
@@ -69,7 +75,6 @@ const BusinessDashboard = () => {
             });
           }
         } else {
-          // Business not approved yet, use default stats
           setStats({
             profileViews: 0,
             verifications: 0,
@@ -87,32 +92,6 @@ const BusinessDashboard = () => {
 
     fetchData();
   }, [id]);
-
-  const handleGenerateApiKey = async () => {
-    if (!id) return;
-
-    setGeneratingKey(true);
-    try {
-      const response = await generateApiKey(id);
-      setNewApiKey(response.api_key);
-      toast.success("API Key Generated", {
-        description: "Store it securely - it won't be shown again.",
-      });
-    } catch (error: any) {
-      toast.error("Failed to generate API key", {
-        description: error.message,
-      });
-    } finally {
-      setGeneratingKey(false);
-    }
-  };
-
-  const copyApiKey = () => {
-    if (newApiKey) {
-      navigator.clipboard.writeText(newApiKey);
-      toast.success("API key copied to clipboard");
-    }
-  };
 
   const handleShareProfile = () => {
     const profileUrl = `${window.location.origin}/business/profile/${id}`;
@@ -156,16 +135,6 @@ const BusinessDashboard = () => {
     }
   };
 
-  // Mock analytics data - would come from backend in production
-  const analyticsData = [
-    { month: "Jan", views: 400, verifications: 240 },
-    { month: "Feb", views: 600, verifications: 380 },
-    { month: "Mar", views: 800, verifications: 520 },
-    { month: "Apr", views: 1100, verifications: 680 },
-    { month: "May", views: 1400, verifications: 890 },
-    { month: "Jun", views: 1800, verifications: 1100 },
-  ];
-
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col">
@@ -202,7 +171,6 @@ const BusinessDashboard = () => {
     );
   }
 
-  // Show pending approval message if not approved yet
   if (business.verification?.status !== 'approved') {
     return (
       <div className="flex min-h-screen flex-col">
@@ -224,7 +192,12 @@ const BusinessDashboard = () => {
               <div className="bg-muted rounded-lg p-4">
                 <p className="text-sm mb-2"><strong>Business Name:</strong> {business.name}</p>
                 <p className="text-sm mb-2"><strong>Business ID:</strong> <code className="bg-background px-2 py-1 rounded text-xs">{id}</code></p>
-                <p className="text-sm"><strong>Status:</strong> <Badge variant="outline" className="ml-2 bg-warning/10 text-warning border-warning capitalize">{business.verification?.status || 'Pending'}</Badge></p>
+                <div className="text-sm">
+                  <strong>Status:</strong>
+                  <Badge variant="outline" className="ml-2 bg-warning/10 text-warning border-warning capitalize">
+                    {business.verification?.status || 'Pending'}
+                  </Badge>
+                </div>
               </div>
               <div className="text-sm text-muted-foreground space-y-2">
                 <p>✓ Payment confirmed</p>
@@ -235,8 +208,8 @@ const BusinessDashboard = () => {
                 <Button asChild variant="outline" className="flex-1">
                   <Link to="/">Back to Home</Link>
                 </Button>
-                <Button asChild className="flex-1">
-                  <Link to={`/business/profile/${id}`}>View Public Profile</Link>
+                <Button asChild className="flex-1" disabled>
+                  <span>View Public Profile (Available after approval)</span>
                 </Button>
               </div>
             </CardContent>
@@ -247,310 +220,332 @@ const BusinessDashboard = () => {
     );
   }
 
+  const navigationItems = [
+    { id: "overview", label: "Overview", icon: Building2 },
+    { id: "marketplace", label: "Marketplace", icon: Store },
+    { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "api", label: "API Keys", icon: Key },
+    { id: "webhooks", label: "Webhooks", icon: Webhook },
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
+
+  // Ensure trust score is at least 50 for display if it's 0
+  const displayTrustScore = business.trustScore === 0 ? 50 : business.trustScore;
+
   return (
     <div className="flex min-h-screen flex-col bg-gradient-subtle">
       <Header />
       <main className="flex-1 py-8">
-        <Container>
-          {/* Header Section */}
+        <Container className="max-w-[1400px]">
+          {/* Modern Header with Hero Stats */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-              <div>
-                <h1 className="text-4xl font-bold mb-2">{business.name}</h1>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <Badge variant="outline" className="text-sm">
-                    {business.category}
-                  </Badge>
-                  <Badge
-                    className={getVerificationStatusColor(business.verification.status)}
-                  >
-                    {getVerificationIcon(business.verification.status)}
-                    <span className="ml-2 capitalize">{business.verification.status}</span>
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    Tier {business.verification.tier}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <TrustScoreGauge score={business.trustScore} size="md" />
-              </div>
-            </div>
-          </motion.div>
-
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="analytics">Usage Analytics</TabsTrigger>
-              <TabsTrigger value="api">API Integration</TabsTrigger>
-              <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-            </TabsList>
-
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="space-y-6">
-              {/* Quick Actions */}
-              <Card className="shadow-elegant border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
-                    Quick Actions
-                  </CardTitle>
-                  <CardDescription>
-                    Promote your verified business
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-3 md:grid-cols-2">
-                  <Button
-                    variant="outline"
-                    className="justify-start"
-                    onClick={handleShareProfile}
-                  >
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share Your Profile
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="justify-start"
-                    onClick={handleCopyEmbedCode}
-                  >
-                    <Code className="h-4 w-4 mr-2" />
-                    Get Badge Code
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="justify-start"
-                    onClick={() => window.open(`/business/${id}`, '_blank')}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    View Public Profile
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="justify-start"
-                    onClick={() => {
-                      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${window.location.origin}/business/profile/${id}`;
-                      window.open(qrUrl, '_blank');
-                    }}
-                  >
-                    <QrCode className="h-4 w-4 mr-2" />
-                    Generate QR Code
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Stats Grid */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="grid gap-6 md:grid-cols-4"
-              >
-                <Card className="shadow-elegant">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Trust Score</CardTitle>
-                    <Star className="h-4 w-4 text-warning" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-foreground">{business?.trustScore || 0}<span className="text-lg text-muted-foreground">/100</span></div>
-                    <p className="text-xs text-success mt-1">
-                      +15% this month
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-elegant">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Profile Views</CardTitle>
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-foreground">{stats?.profileViews || 0}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Total views
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-elegant">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Verifications</CardTitle>
-                    <Shield className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-foreground">{stats?.verifications || 0}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Successful checks
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="shadow-elegant">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Days Active</CardTitle>
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-foreground">{daysActive}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Since registration
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              {/* Recent Activity */}
-              <Card className="shadow-elegant">
-                <CardHeader>
-                  <CardTitle className="text-lg">Recent Activity</CardTitle>
-                  <CardDescription>Latest interactions with your business</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-full bg-primary/10">
-                        <Eye className="h-4 w-4 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">15 people viewed your profile</p>
-                        <p className="text-xs text-muted-foreground">2 hours ago</p>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-full bg-success/10">
-                        <CheckCircle2 className="h-4 w-4 text-success" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Account verified by customer</p>
-                        <p className="text-xs text-muted-foreground">5 hours ago</p>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-full bg-warning/10">
-                        <Star className="h-4 w-4 text-warning" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Trust score increased to {business?.trustScore || 95}</p>
-                        <p className="text-xs text-muted-foreground">1 day ago</p>
+            {/* Business Identity Section */}
+            <div className="bg-card rounded-xl p-6 shadow-elegant border mb-6">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                <div className="flex-1">
+                  <div className="flex items-start gap-4 mb-4">
+                    {business.logo && (
+                      <img 
+                        src={business.logo} 
+                        alt={business.name}
+                        className="w-16 h-16 rounded-lg object-cover border-2 border-border"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <h1 className="text-3xl font-bold mb-2">{business.name}</h1>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <Badge variant="outline" className="text-sm">
+                          {business.category}
+                        </Badge>
+                        <Badge className={getVerificationStatusColor(business.verification.status)}>
+                          {getVerificationIcon(business.verification.status)}
+                          <span className="ml-2 capitalize">{business.verification.status}</span>
+                        </Badge>
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Quick Actions */}
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={handleShareProfile}>
+                      <Share2 className="h-3.5 w-3.5 mr-2" />
+                      Share
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleCopyEmbedCode}>
+                      <Code className="h-3.5 w-3.5 mr-2" />
+                      Embed Badge
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => window.open(`/business/profile/${id}`, '_blank')}>
+                      <ExternalLink className="h-3.5 w-3.5 mr-2" />
+                      Public Profile
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Trust Score Hero */}
+                <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-6 border border-primary/20">
+                  <TrustScoreGauge score={displayTrustScore} size="lg" showLabel={false} />
+                  <p className="text-sm font-medium text-muted-foreground mt-2">Trust Score</p>
+                  <p className="text-xs text-success mt-1">+15% this month</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Key Metrics Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="shadow-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Eye className="h-5 w-5 text-primary" />
+                    <ArrowUpRight className="h-4 w-4 text-success" />
+                  </div>
+                  <div className="text-2xl font-bold">{stats?.profileViews || 0}</div>
+                  <p className="text-xs text-muted-foreground">Profile Views</p>
                 </CardContent>
               </Card>
 
-              {/* Trust ID NFT - Show prominently if business is verified */}
-              {business.hedera?.trustIdNft && (
+              <Card className="shadow-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Shield className="h-5 w-5 text-success" />
+                    <ArrowUpRight className="h-4 w-4 text-success" />
+                  </div>
+                  <div className="text-2xl font-bold">{stats?.verifications || 0}</div>
+                  <p className="text-xs text-muted-foreground">Verifications</p>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Users className="h-5 w-5 text-warning" />
+                    <ArrowUpRight className="h-4 w-4 text-success" />
+                  </div>
+                  <div className="text-2xl font-bold">{business.reviewCount || 0}</div>
+                  <p className="text-xs text-muted-foreground">Reviews</p>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Clock className="h-5 w-5 text-muted-foreground" />
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="text-2xl font-bold">{daysActive}</div>
+                  <p className="text-xs text-muted-foreground">Days Active</p>
+                </CardContent>
+              </Card>
+            </div>
+          </motion.div>
+
+          {/* Main Content - Side Navigation Layout */}
+          <div className="grid lg:grid-cols-[240px_1fr] gap-6">
+            {/* Side Navigation */}
+            <nav className="space-y-1">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveSection(item.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Content Area */}
+            <div className="space-y-6">
+              {activeSection === "overview" && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-6"
                 >
-                  <TrustIdNftCard
-                    tokenId={business.hedera.trustIdNft.tokenId}
-                    serialNumber={business.hedera.trustIdNft.serialNumber}
-                    explorerUrl={business.hedera.trustIdNft.explorerUrl}
-                    trustScore={business.trustScore}
-                    verificationTier={business.verification?.tier || 1}
-                    businessName={business.name}
+                  {/* Marketplace Status at Top */}
+                  <MarketplaceStatusCard
+                    businessId={id!}
+                    marketplaceStatus={business.marketplace}
+                    onStatusUpdate={() => {
+                      setShowProfileEditor(true);
+                      setActiveSection("marketplace");
+                    }}
+                  />
+
+                  {/* Trust ID NFT */}
+                  {business.hedera?.trustIdNft && (
+                    <TrustIdNftCard
+                      tokenId={business.hedera.trustIdNft.tokenId}
+                      serialNumber={business.hedera.trustIdNft.serialNumber}
+                      explorerUrl={business.hedera.trustIdNft.explorerUrl}
+                      trustScore={displayTrustScore}
+                      verificationTier={business.verification.tier}
+                      businessName={business.name}
+                    />
+                  )}
+
+                  {/* Recent Activity */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Recent Activity</CardTitle>
+                      <CardDescription>Latest interactions with your business</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-4">
+                          <div className="p-2 rounded-full bg-primary/10">
+                            <Eye className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">15 people viewed your profile</p>
+                            <p className="text-xs text-muted-foreground">2 hours ago</p>
+                          </div>
+                        </div>
+                        <Separator />
+                        <div className="flex items-start gap-4">
+                          <div className="p-2 rounded-full bg-success/10">
+                            <CheckCircle2 className="h-4 w-4 text-success" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">Account verified by customer</p>
+                            <p className="text-xs text-muted-foreground">5 hours ago</p>
+                          </div>
+                        </div>
+                        <Separator />
+                        <div className="flex items-start gap-4">
+                          <div className="p-2 rounded-full bg-warning/10">
+                            <Star className="h-4 w-4 text-warning" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">New 5-star review received</p>
+                            <p className="text-xs text-muted-foreground">1 day ago</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+
+              {activeSection === "marketplace" && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-6"
+                >
+                  {showProfileEditor ? (
+                    <>
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-2xl font-bold">Marketplace Profile</h2>
+                        <Button variant="outline" onClick={() => setShowProfileEditor(false)}>
+                          Back to Status
+                        </Button>
+                      </div>
+                      <MarketplaceProfileEditor
+                        businessId={id!}
+                        currentProfile={business.marketplace?.profile}
+                        onUpdate={async () => {
+                          toast.success("Profile updated!");
+                          // Refetch business data
+                          const updatedBusiness = await getBusiness(id!);
+                          setBusiness(updatedBusiness.data);
+                          setShowProfileEditor(false);
+                        }}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <MarketplaceProfilePreview
+                        business={business}
+                        onEdit={() => setShowProfileEditor(true)}
+                      />
+                      <MarketplaceStatusCard
+                        businessId={id!}
+                        marketplaceStatus={business.marketplace}
+                        onStatusUpdate={() => setShowProfileEditor(true)}
+                      />
+                      {business.marketplace?.status === 'active' && (
+                        <MarketplaceAnalyticsCard
+                          analytics={business.marketplace?.analytics || {
+                            views: 0,
+                            websiteClicks: 0,
+                            directionRequests: 0,
+                            phoneClicks: 0,
+                            whatsappClicks: 0,
+                            reviewsCount: 0,
+                            lastViewedAt: new Date().toISOString()
+                          }}
+                        />
+                      )}
+                    </>
+                  )}
+                </motion.div>
+              )}
+
+              {activeSection === "analytics" && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                >
+                  <UsageAnalytics businessId={id!} />
+                </motion.div>
+              )}
+
+              {activeSection === "api" && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                >
+                  <ApiKeysManagement
+                    businessId={id!}
+                    existingKeys={business.apiKeys || []}
+                    onGenerateKey={async () => {
+                      const { generateApiKey } = await import("@/services/business");
+                      const response = await generateApiKey(id!);
+                      return response.api_key;
+                    }}
                   />
                 </motion.div>
               )}
 
-              {/* Business Information */}
-              <Card className="shadow-elegant">
-                <CardHeader>
-                  <CardTitle>Business Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">Email</p>
-                      <p className="text-sm">{business.contact.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">Phone</p>
-                      <p className="text-sm">{business.contact.phone}</p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <p className="text-sm font-medium text-muted-foreground mb-1">Address</p>
-                      <p className="text-sm">{business.contact.address}</p>
-                    </div>
-                  </div>
-                  <Separator />
-                  {business.bankAccount && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">
-                        Bank Account
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm">{business.bankAccount.accountName || 'Not provided'}</p>
-                        {business.bankAccount.verified && (
-                          <Badge variant="outline" className="bg-success/10 text-success border-success">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Verified
-                          </Badge>
-                        )}
-                      </div>
-                      {business.bankAccount.bankCode && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Bank Code: {business.bankAccount.bankCode}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+              {activeSection === "webhooks" && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                >
+                  <WebhookManagement businessId={id!} />
+                </motion.div>
+              )}
 
-            {/* Analytics Tab */}
-            <TabsContent value="analytics" className="space-y-6">
-              <UsageAnalytics businessId={id!} stats={{
-                totalRequests: stats?.verifications || 1247,
-                successRate: 98.2,
-                avgResponseTime: 4.2,
-                requestsThisMonth: stats?.verifications || 892,
-                requestsLastMonth: 654,
-              }} />
-            </TabsContent>
-
-            {/* API Integration Tab */}
-            <TabsContent value="api" className="space-y-6">
-              <ApiKeysManagement 
-                businessId={id!}
-                existingKeys={business.apiKeys}
-                onGenerateKey={async () => {
-                  const response = await generateApiKey(id!);
-                  return response.api_key;
-                }}
-              />
-            </TabsContent>
-
-            {/* Webhooks Tab */}
-            <TabsContent value="webhooks" className="space-y-6">
-              <WebhookManagement businessId={id!} />
-            </TabsContent>
-
-            {/* Settings Tab */}
-            <TabsContent value="settings" className="space-y-6">
-              <Card className="shadow-elegant">
-                <CardHeader>
-                  <CardTitle>Business Settings</CardTitle>
-                  <CardDescription>
-                    Manage your business profile and preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Settings panel coming soon. Contact support for any changes needed.
-                  </p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+              {activeSection === "settings" && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                >
+                  <BusinessSettingsForm 
+                    business={business} 
+                    onUpdate={async () => {
+                      const updatedBusiness = await getBusiness(id!);
+                      setBusiness(updatedBusiness.data);
+                    }} 
+                  />
+                </motion.div>
+              )}
+            </div>
+          </div>
         </Container>
       </main>
       <Footer />

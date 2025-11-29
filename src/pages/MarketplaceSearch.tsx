@@ -1,184 +1,121 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { Loader2, AlertCircle } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Container from "@/components/layout/Container";
-import BusinessCard from "@/components/features/marketplace/BusinessCard";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Search, MapPin, SlidersHorizontal, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
+import MarketplaceSearchBar from "@/components/features/marketplace/MarketplaceSearchBar";
+import MarketplaceBusinessCard from "@/components/features/marketplace/MarketplaceBusinessCard";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { searchMarketplace } from "@/services/marketplace";
-import type { MarketplaceSearchResult } from "@/types/marketplace";
+import type { MarketplaceSearchResult } from "@/types";
+import { toast } from "sonner";
 
 const MarketplaceSearch = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [businesses, setBusinesses] = useState<MarketplaceSearchResult[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [totalResults, setTotalResults] = useState(0);
 
+  const query = searchParams.get('q') || '';
+  const lat = searchParams.get('lat');
+  const lng = searchParams.get('lng');
+
   useEffect(() => {
-    const query = searchParams.get("q");
     if (query) {
-      setSearchQuery(query);
-      performSearch(query);
+      fetchResults();
     }
-    detectUserLocation();
-  }, [searchParams]);
+  }, [query, lat, lng]);
 
-  const detectUserLocation = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.log("Geolocation denied, using default location");
-        }
-      );
-    }
-  };
-
-  const performSearch = async (query: string) => {
+  const fetchResults = async () => {
     setLoading(true);
-
     try {
-      const response = await searchMarketplace({
-        query,
-        lat: userLocation?.lat,
-        lng: userLocation?.lng,
-        radius: 10, // 10km radius
-        page: 1,
-        limit: 20, // Show more results
-      });
+      const filters: any = { q: query };
+      if (lat && lng) {
+        filters.lat = parseFloat(lat);
+        filters.lng = parseFloat(lng);
+      }
 
-      setBusinesses(response.results);
-      setTotalResults(response.total);
+      const response = await searchMarketplace(filters);
+      setBusinesses(response.businesses);
+      setTotalResults(response.totalResults);
     } catch (error) {
-      toast.error("Search failed", {
-        description: error instanceof Error ? error.message : "Unable to fetch results. Please try again.",
-      });
-      console.error("Search error:", error);
+      console.error('Search failed:', error);
+      toast.error('Failed to search businesses. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigate(`/marketplace/search?q=${encodeURIComponent(searchQuery)}`);
+  const handleSearch = (newQuery: string, location?: { lat: number; lng: number }) => {
+    const params = new URLSearchParams({ q: newQuery });
+    if (location) {
+      params.append('lat', location.lat.toString());
+      params.append('lng', location.lng.toString());
     }
+    navigate(`/marketplace/search?${params.toString()}`);
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="min-h-screen flex flex-col">
       <Header />
-
-      <main className="flex-1 py-8 bg-gradient-subtle">
+      
+      <main className="flex-1 py-8">
         <Container>
-          {/* Search Header */}
+          {/* Search Bar */}
           <div className="mb-8">
-            <div className="bg-white rounded-lg shadow-elegant p-4">
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="flex-1 flex items-center gap-2">
-                  <Search className="h-5 w-5 text-muted-foreground" />
-                  <Input
-                    placeholder="Search for products or services..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    className="border-0 shadow-none focus-visible:ring-0"
-                  />
-                </div>
-                <Button onClick={handleSearch}>
-                  <Search className="h-4 w-4 mr-2" />
-                  Search
-                </Button>
-              </div>
-            </div>
-
-            {/* Results Header */}
-            <div className="mt-4 flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold">
-                  {loading ? "Searching..." : `Results for "${searchParams.get("q")}"`}
-                </h1>
-                {!loading && (
-                  <p className="text-muted-foreground">
-                    {totalResults} verified {totalResults === 1 ? "business" : "businesses"} found
-                  </p>
-                )}
-              </div>
-
-              <Button variant="outline" size="sm">
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
-                Filters
-              </Button>
-            </div>
+            <MarketplaceSearchBar 
+              onSearch={handleSearch} 
+              defaultQuery={query}
+              loading={loading}
+            />
           </div>
 
-          {/* Results Grid */}
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <Card key={i}>
-                  <div className="h-48 bg-muted animate-pulse" />
-                  <CardContent className="pt-6 space-y-4">
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-10 w-full" />
-                  </CardContent>
-                </Card>
-              ))}
+          {/* Results Count */}
+          {!loading && (
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">
+                {totalResults > 0 ? (
+                  <>
+                    Found <span className="text-primary">{totalResults}</span> verified {totalResults === 1 ? 'business' : 'businesses'}
+                    {query && <> for "{query}"</>}
+                  </>
+                ) : (
+                  <>No results found{query && <> for "{query}"</>}</>
+                )}
+              </h2>
             </div>
-          ) : businesses.length === 0 ? (
-            <Card className="text-center py-16">
-              <CardContent>
-                <AlertCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">No businesses found</h3>
-                <p className="text-muted-foreground mb-6">
-                  Try a different search term or browse by category
-                </p>
-                <Button onClick={() => navigate("/marketplace")}>
-                  Back to Marketplace
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              {businesses.map((business, index) => (
-                <motion.div
-                  key={business.businessId}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <BusinessCard business={business} index={index} />
-                </motion.div>
-              ))}
-            </motion.div>
           )}
 
-          {/* Location Note */}
-          {userLocation && !loading && businesses.length > 0 && (
-            <div className="mt-8 text-center">
-              <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Results sorted by distance from your location
-              </p>
+          {/* Loading State */}
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-20 space-y-4">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <p className="text-muted-foreground">Searching for verified businesses...</p>
+            </div>
+          )}
+
+          {/* No Results */}
+          {!loading && businesses.length === 0 && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                No verified businesses found matching your search. Try different keywords or expand your search area.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Results Grid */}
+          {!loading && businesses.length > 0 && (
+            <div className="space-y-4">
+              {businesses.map((business, index) => (
+                <MarketplaceBusinessCard
+                  key={business.businessId}
+                  {...business}
+                  index={index}
+                />
+              ))}
             </div>
           )}
         </Container>
